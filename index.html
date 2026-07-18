@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evan Jones Boddu — Data Engineer & Storyteller</title>
+<meta name="description" content="Evan Jones Boddu. Senior data engineer in Dallas, TX. Storyteller. Just another human being wandering on the earth — who happens to love data.">
+<style>
+  :root {
+    --paper: #f4f8f6;
+    --paper-card: #ffffff;
+    --paper-line: #dbe7e1;
+    --ink: #0f211d;
+    --ink-soft: #4f6660;
+    --console: #0a1715;
+    --console-card: #101f1c;
+    --console-line: rgba(148, 199, 183, 0.14);
+    --console-text: #e7f2ec;
+    --console-soft: #8aa89e;
+    --teal: #12a594;
+    --teal-bright: #2fd4be;
+    --amber: #e89b3c;
+    --amber-bright: #ffbe55;
+    --clay: #d96c57;
+    --radius: 14px;
+    --font-display: "Charter", "Bitstream Charter", "Iowan Old Style", Cambria, Georgia, serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--teal); color: #fff; }
+
+  a { color: var(--teal); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ================= NAV / PIPELINE ================= */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(10, 23, 21, 0.82);
+    backdrop-filter: saturate(160%) blur(16px);
+    -webkit-backdrop-filter: saturate(160%) blur(16px);
+    border-bottom: 1px solid var(--console-line);
+  }
+  .nav-inner {
+    max-width: 1020px;
+    margin: 0 auto;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 22px;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--console-text);
+    letter-spacing: 0.01em;
+  }
+  .brand:hover { text-decoration: none; color: var(--amber-bright); }
+  .stages {
+    display: flex;
+    gap: 4px;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .stages a {
+    color: var(--console-soft);
+    padding: 5px 9px;
+    border-radius: 6px;
+    transition: color .25s ease, background .25s ease;
+  }
+  .stages a:hover { color: var(--console-text); text-decoration: none; }
+  .stages a.active {
+    color: var(--amber-bright);
+    background: rgba(232, 155, 60, 0.12);
+  }
+  .stages .sep { color: var(--console-line); padding: 5px 0; user-select: none; }
+  @media (max-width: 760px) {
+    .stages { display: none; }
+  }
+  /* scroll progress line — the pipeline itself */
+  .pipeline-track {
+    height: 2px;
+    background: rgba(148, 199, 183, 0.12);
+    position: relative;
+  }
+  .pipeline-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--teal-bright), var(--amber-bright));
+  }
+
+  /* ================= SHARED ================= */
+  .section { padding: 120px 22px; position: relative; }
+  .section-inner { max-width: 1020px; margin: 0 auto; position: relative; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--teal);
+    margin-bottom: 18px;
+  }
+  .eyebrow .stage-no { color: var(--amber); }
+  .dark .eyebrow { color: var(--teal-bright); }
+  .dark .eyebrow .stage-no { color: var(--amber-bright); }
+
+  .headline {
+    font-family: var(--font-display);
+    font-size: clamp(34px, 5.6vw, 58px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  .headline em {
+    font-style: italic;
+    color: var(--teal);
+  }
+  .dark .headline em { color: var(--teal-bright); }
+
+  .subhead {
+    font-size: clamp(17px, 2.1vw, 20px);
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-top: 20px;
+    max-width: 640px;
+  }
+  .dark .subhead { color: var(--console-soft); }
+
+  /* graph-paper ground for light sections */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(18, 165, 148, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(18, 165, 148, 0.05) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  /* console ground for dark sections */
+  .dark {
+    background-color: var(--console);
+    background-image: radial-gradient(rgba(148, 199, 183, 0.09) 1px, transparent 1px);
+    background-size: 26px 26px;
+    color: var(--console-text);
+  }
+
+  /* scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity .7s cubic-bezier(0.22, 0.8, 0.3, 1), transform .7s cubic-bezier(0.22, 0.8, 0.3, 1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ================= HERO ================= */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    padding: 130px 22px 90px;
+    position: relative;
+    overflow: hidden;
+  }
+  #stream-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .hero-content { max-width: 1020px; margin: 0 auto; width: 100%; position: relative; }
+  .hero .prompt {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--teal);
+    margin-bottom: 22px;
+  }
+  .hero .prompt .cursor {
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--amber);
+    vertical-align: -2px;
+    margin-left: 4px;
+    animation: blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(46px, 8.5vw, 92px);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.02;
+  }
+  .hero h1 .period { color: var(--amber); }
+  .hero .tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(20px, 3vw, 30px);
+    color: var(--ink-soft);
+    margin-top: 18px;
+    letter-spacing: -0.005em;
+  }
+  .hero .tagline strong { color: var(--teal); font-weight: 700; }
+  .hero .bio {
+    font-size: clamp(16px, 1.9vw, 19px);
+    color: var(--ink-soft);
+    max-width: 540px;
+    margin-top: 22px;
+    line-height: 1.6;
+  }
+  .ticker {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 30px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    background: var(--paper-card);
+    border: 1px solid var(--paper-line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 12px rgba(15, 33, 29, 0.05);
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+  .ticker .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--teal);
+    align-self: center;
+    animation: pulse-dot 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(18, 165, 148, 0.4); }
+    50% { box-shadow: 0 0 0 6px rgba(18, 165, 148, 0); }
+  }
+  .ticker .count {
+    color: var(--teal);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .cta-row { display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap; }
+  .btn {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    padding: 13px 22px;
+    border-radius: 10px;
+    transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { background: var(--teal); text-decoration: none; transform: translateY(-2px); }
+  .btn-secondary { color: var(--ink); border-color: var(--ink-soft); }
+  .btn-secondary:hover { border-color: var(--teal); color: var(--teal); text-decoration: none; transform: translateY(-2px); }
+
+  /* staggered hero entrance */
+  .hero .stagger {
+    opacity: 0;
+    transform: translateY(22px);
+    animation: rise .8s cubic-bezier(0.22, 0.8, 0.3, 1) forwards;
+  }
+  .hero .stagger:nth-child(2) { animation-delay: .12s; }
+  .hero .stagger:nth-child(3) { animation-delay: .24s; }
+  .hero .stagger:nth-child(4) { animation-delay: .36s; }
+  .hero .stagger:nth-child(5) { animation-delay: .48s; }
+  .hero .stagger:nth-child(6) { animation-delay: .6s; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero .stagger { animation: none; opacity: 1; transform: none; }
+    .hero .prompt .cursor, .ticker .dot { animation: none; }
+  }
+
+  /* ================= CARDS ================= */
+  .grid { display: grid; gap: 18px; margin-top: 54px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 820px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--paper-card);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    padding: 30px 28px;
+    transition: transform .3s cubic-bezier(0.22, 0.8, 0.3, 1), box-shadow .3s ease, border-color .3s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    border-color: var(--teal);
+    box-shadow: 0 16px 36px rgba(15, 33, 29, 0.09);
+  }
+  .card h3 {
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    margin: 18px 0 8px;
+    letter-spacing: -0.005em;
+  }
+  .card p { font-size: 15px; color: var(--ink-soft); line-height: 1.6; }
+
+  .dark .card {
+    background: var(--console-card);
+    border-color: var(--console-line);
+  }
+  .dark .card:hover {
+    border-color: var(--teal-bright);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+  }
+  .dark .card h3 { color: var(--console-text); }
+  .dark .card p { color: var(--console-soft); }
+
+  /* ================= ANIMATED ICONS ================= */
+  .icon {
+    width: 44px; height: 44px;
+    display: block;
+  }
+  .icon * { vector-effect: non-scaling-stroke; }
+
+  /* magnifier: ring pulses; wiggles on card hover */
+  .icon-search .pulse-ring {
+    transform-origin: 19px 19px;
+    animation: ring-pulse 2.6s ease-out infinite;
+  }
+  @keyframes ring-pulse {
+    0% { transform: scale(0.6); opacity: 0.9; }
+    70%, 100% { transform: scale(1.5); opacity: 0; }
+  }
+  .card:hover .icon-search { animation: wiggle .5s ease; }
+  @keyframes wiggle {
+    25% { transform: rotate(-9deg); }
+    65% { transform: rotate(7deg); }
+  }
+
+  /* gear: slow spin, fast on hover */
+  .icon-gear .gear-wheel {
+    transform-origin: 22px 22px;
+    animation: spin 14s linear infinite;
+  }
+  .card:hover .icon-gear .gear-wheel { animation-duration: 2.5s; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* compass: needle sways */
+  .icon-compass .needle {
+    transform-origin: 22px 22px;
+    animation: sway 3.4s ease-in-out infinite;
+  }
+  .card:hover .icon-compass .needle { animation-duration: 1.1s; }
+  @keyframes sway {
+    0%, 100% { transform: rotate(-18deg); }
+    50% { transform: rotate(24deg); }
+  }
+
+  /* database: rings ripple upward */
+  .icon-db .ring { animation: db-ring 2.8s ease-in-out infinite; }
+  .icon-db .ring:nth-child(2) { animation-delay: .45s; }
+  .icon-db .ring:nth-child(3) { animation-delay: .9s; }
+  @keyframes db-ring {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+
+  /* stream: dashes flow */
+  .icon-stream path {
+    stroke-dasharray: 6 7;
+    animation: flow 1.4s linear infinite;
+  }
+  .icon-stream path:nth-child(2) { animation-duration: 1.9s; }
+  .icon-stream path:nth-child(3) { animation-duration: 1.1s; }
+  @keyframes flow { to { stroke-dashoffset: -13; } }
+
+  /* cloud: drifts */
+  .icon-cloud .cloud-body { animation: drift 4.5s ease-in-out infinite; }
+  @keyframes drift {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); }
+  }
+  .icon-cloud .drop { animation: drop-fall 2.2s ease-in infinite; }
+  .icon-cloud .drop:nth-child(3) { animation-delay: .7s; }
+  .icon-cloud .drop:nth-child(4) { animation-delay: 1.4s; }
+  @keyframes drop-fall {
+    0% { transform: translateY(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(9px); opacity: 0; }
+  }
+
+  /* layers: stack breathes apart */
+  .icon-layers .layer { animation: layer-lift 3.2s ease-in-out infinite; }
+  .icon-layers .layer:nth-child(1) { animation-delay: 0s; }
+  .icon-layers .layer:nth-child(2) { animation-delay: .25s; }
+  .icon-layers .layer:nth-child(3) { animation-delay: .5s; }
+  @keyframes layer-lift {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+
+  /* shield: check draws when visible */
+  .icon-shield .check {
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+  }
+  .visible .icon-shield .check {
+    animation: draw-check 1s ease .4s forwards;
+  }
+  @keyframes draw-check { to { stroke-dashoffset: 0; } }
+  .icon-shield .shield-body { animation: shield-glow 3s ease-in-out infinite; }
+  @keyframes shield-glow {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+
+  /* gauge: needle sweeps on visible, re-sweeps on hover */
+  .icon-gauge .needle {
+    transform-origin: 22px 30px;
+    transform: rotate(-60deg);
+    transition: transform 1s cubic-bezier(0.34, 1.4, 0.5, 1) .3s;
+  }
+  .visible .icon-gauge .needle { transform: rotate(52deg); }
+  .card:hover .icon-gauge .needle { transform: rotate(-60deg); transition-delay: 0s; }
+
+  /* cart: bounces on hover */
+  .card:hover .icon-cart { animation: cart-hop .55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes cart-hop {
+    30% { transform: translateY(-6px) rotate(-4deg); }
+    60% { transform: translateY(0) rotate(2deg); }
+  }
+  .icon-cart .wheel { transform-origin: center; transform-box: fill-box; animation: spin 3.5s linear infinite; }
+
+  /* spark: twinkles */
+  .icon-spark .spark-big {
+    transform-origin: 22px 22px;
+    animation: twinkle 2.4s ease-in-out infinite;
+  }
+  .icon-spark .spark-small {
+    transform-origin: 33px 12px;
+    animation: twinkle 2.4s ease-in-out 1.2s infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { transform: scale(0.85) rotate(0deg); opacity: 0.7; }
+    50% { transform: scale(1.1) rotate(18deg); opacity: 1; }
+  }
+
+  /* flask (PhD): bubbles rise */
+  .icon-flask .bubble { animation: bubble-rise 2.4s ease-in infinite; }
+  .icon-flask .bubble:nth-child(2) { animation-delay: .8s; }
+  .icon-flask .bubble:nth-child(3) { animation-delay: 1.6s; }
+  @keyframes bubble-rise {
+    0% { transform: translateY(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(-12px); opacity: 0; }
+  }
+
+  /* cap: tips on hover */
+  .card:hover .icon-cap { animation: cap-tip .6s ease; }
+  @keyframes cap-tip {
+    40% { transform: rotate(-10deg) translateY(-3px); }
+  }
+  .icon-cap .tassel {
+    transform-origin: 33px 20px;
+    animation: sway 3s ease-in-out infinite;
+  }
+
+  /* medal: shine sweep */
+  .icon-medal .shine {
+    animation: shine-sweep 3.2s ease-in-out infinite;
+  }
+  @keyframes shine-sweep {
+    0%, 20%, 100% { opacity: 0; transform: translateX(-8px); }
+    10% { opacity: 0.9; transform: translateX(8px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .icon *, .card:hover .icon, .card:hover .icon * { animation: none !important; }
+    .icon-gauge .needle { transition: none; transform: rotate(52deg); }
+    .icon-shield .check { stroke-dashoffset: 0; }
+  }
+
+  /* ================= SQL CONSOLE ================= */
+  .sql-console {
+    background: var(--console-card);
+    border: 1px solid var(--console-line);
+    border-radius: var(--radius);
+    margin-top: 48px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    overflow: hidden;
+  }
+  .sql-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--console-line);
+    color: var(--console-soft);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+  .sql-header .lights { display: flex; gap: 7px; }
+  .sql-header .lights span { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .sql-header .lights span:nth-child(1) { background: var(--clay); }
+  .sql-header .lights span:nth-child(2) { background: var(--amber); }
+  .sql-header .lights span:nth-child(3) { background: var(--teal); }
+  .sql-body { padding: 22px 24px; line-height: 1.85; color: #cfe3db; overflow-x: auto; }
+  .sql-body .kw { color: #7fd8f7; }
+  .sql-body .str { color: var(--amber-bright); }
+  .sql-body .comment { color: #6d857c; }
+  .run-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    background: var(--teal);
+    color: #06231e;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background .2s ease, transform .2s ease;
+    font-weight: 700;
+  }
+  .run-btn:hover { background: var(--teal-bright); transform: translateY(-1px); }
+  .run-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+  .sql-result {
+    border-top: 1px dashed var(--console-line);
+    padding: 18px 24px;
+    color: var(--console-soft);
+    white-space: pre;
+    overflow-x: auto;
+    display: none;
+    line-height: 1.7;
+    font-size: 13px;
+  }
+  .sql-result.open { display: block; }
+  .sql-result .hl { color: var(--teal-bright); }
+  .sql-result .ok { color: var(--amber-bright); }
+
+  /* ================= STATS ================= */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 60px;
+    text-align: center;
+  }
+  @media (max-width: 700px) { .stats { grid-template-columns: 1fr; } }
+  .stat {
+    padding: 30px 16px;
+    border: 1px solid var(--console-line);
+    border-radius: var(--radius);
+    background: rgba(16, 31, 28, 0.6);
+  }
+  .stat .num {
+    font-family: var(--font-mono);
+    font-size: clamp(40px, 6vw, 62px);
+    font-weight: 700;
+    color: var(--teal-bright);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat:nth-child(2) .num { color: var(--amber-bright); }
+  .stat:nth-child(3) .num { color: #7fd8f7; }
+  .stat .label {
+    font-size: 14px;
+    color: var(--console-soft);
+    margin-top: 8px;
+    line-height: 1.45;
+  }
+
+  /* ================= TIMELINE ================= */
+  .timeline {
+    margin-top: 60px;
+    position: relative;
+    padding-left: 40px;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 11px; top: 8px; bottom: 8px;
+    width: 2px;
+    background-image: linear-gradient(var(--teal) 45%, rgba(18, 165, 148, 0) 0%);
+    background-size: 2px 14px;
+    animation: line-flow 1.2s linear infinite;
+  }
+  @keyframes line-flow { to { background-position-y: 14px; } }
+  @media (prefers-reduced-motion: reduce) { .timeline::before { animation: none; } }
+  .job {
+    position: relative;
+    background: var(--paper-card);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    padding: 32px 34px;
+    margin-bottom: 20px;
+    transition: transform .3s cubic-bezier(0.22, 0.8, 0.3, 1), box-shadow .3s ease, border-color .3s ease;
+  }
+  .job:hover {
+    transform: translateX(6px);
+    border-color: var(--teal);
+    box-shadow: 0 14px 32px rgba(15, 33, 29, 0.09);
+  }
+  .job::before {
+    content: "";
+    position: absolute;
+    left: -36px; top: 38px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 3px solid var(--teal);
+  }
+  .visible.job::before { animation: node-pop .5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes node-pop { 0% { transform: scale(0); } }
+  .job .when {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .job h3 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 8px;
+    letter-spacing: -0.005em;
+  }
+  .job .where {
+    font-size: 16px;
+    color: var(--teal);
+    font-weight: 600;
+    margin-top: 3px;
+  }
+  .job p {
+    font-size: 15.5px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin-top: 12px;
+    max-width: 660px;
+  }
+  @media (max-width: 700px) {
+    .timeline { padding-left: 30px; }
+    .job { padding: 26px 24px; }
+    .job::before { left: -26px; }
+  }
+
+  /* ================= PILLS ================= */
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 11px;
+    border-radius: 7px;
+    border: 1px solid var(--paper-line);
+    color: var(--ink-soft);
+    background: var(--paper);
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .card:hover .pill { border-color: rgba(18, 165, 148, 0.45); }
+  .dark .pill {
+    border-color: var(--console-line);
+    color: var(--console-soft);
+    background: rgba(10, 23, 21, 0.6);
+  }
+  .dark .card:hover .pill { border-color: rgba(47, 212, 190, 0.4); color: #b9d6cc; }
+
+  /* ================= FOOTER ================= */
+  footer {
+    background: var(--console);
+    background-image: radial-gradient(rgba(148, 199, 183, 0.09) 1px, transparent 1px);
+    background-size: 26px 26px;
+    color: var(--console-text);
+    padding: 100px 22px 46px;
+  }
+  .footer-inner { max-width: 1020px; margin: 0 auto; }
+  .contact-line {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.6vw, 52px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    max-width: 720px;
+    text-wrap: balance;
+  }
+  .contact-line em { font-style: italic; color: var(--teal-bright); }
+  footer .links { display: flex; gap: 14px; flex-wrap: wrap; margin: 38px 0 60px; }
+  footer .links a {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    color: var(--console-text);
+    border: 1px solid var(--console-line);
+    border-radius: 10px;
+    padding: 12px 20px;
+    transition: border-color .2s ease, color .2s ease, transform .2s ease;
+  }
+  footer .links a:hover {
+    border-color: var(--teal-bright);
+    color: var(--teal-bright);
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+  .fine-print {
+    border-top: 1px solid var(--console-line);
+    padding-top: 22px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--console-soft);
+    line-height: 1.8;
+  }
+  .fine-print .comment { color: #5d746c; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="#top">Evan Boddu</a>
+    <ul class="stages">
+      <li><a href="#raw" data-stage="raw">raw</a></li>
+      <li class="sep">→</li>
+      <li><a href="#refined" data-stage="refined">refined</a></li>
+      <li class="sep">→</li>
+      <li><a href="#curated" data-stage="curated">curated</a></li>
+      <li class="sep">→</li>
+      <li><a href="#lineage" data-stage="lineage">lineage</a></li>
+      <li class="sep">→</li>
+      <li><a href="#served" data-stage="served">served</a></li>
+    </ul>
+  </div>
+  <div class="pipeline-track"><div class="pipeline-fill" id="pipeline-fill"></div></div>
+</nav>
+
+<!-- ================= HERO / INGESTION ================= -->
+<header class="hero grid-bg" id="top">
+  <canvas id="stream-canvas" aria-hidden="true"></canvas>
+  <div class="hero-content">
+    <div class="prompt stagger">evan@dallas:~$ whoami<span class="cursor"></span></div>
+    <h1 class="stagger">Evan Jones Boddu<span class="period">.</span></h1>
+    <div class="tagline stagger">Senior data engineer at <strong>Nike</strong>. Storyteller by nature. Wanderer by habit.</div>
+    <p class="bio stagger">Just another human being wandering on the earth. Oh — and I love data, the stories it has to offer, and the challenges that come with it.</p>
+    <div class="stagger">
+      <div class="ticker">
+        <span class="dot"></span>
+        <span>records through my pipelines since you arrived:</span>
+        <span class="count" id="ticker-count">0</span>
+      </div>
+    </div>
+    <div class="cta-row stagger">
+      <a class="btn btn-primary" href="#curated">follow the pipeline ↓</a>
+      <a class="btn btn-secondary" href="#served">say hello</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= RAW / STORY ================= -->
+<section class="section" id="raw">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="eyebrow"><span class="stage-no">stage 01</span> · raw — where every story starts</div>
+      <h2 class="headline">Every dataset has a story.<br>I just help it <em>speak</em>.</h2>
+      <p class="subhead">From turbine floors in Visakhapatnam to billion-record pipelines at Nike — six years of following the same thread: curiosity. Give me a messy table and a hard question, and I'm genuinely happy.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card reveal">
+        <svg class="icon icon-search" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle class="pulse-ring" cx="19" cy="19" r="11" stroke="#e89b3c" stroke-width="1.5"/>
+          <circle cx="19" cy="19" r="11" stroke="#12a594" stroke-width="2.5"/>
+          <line x1="28" y1="28" x2="37" y2="37" stroke="#12a594" stroke-width="3" stroke-linecap="round"/>
+          <path d="M14 19a5 5 0 0 1 5-5" stroke="#e89b3c" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h3>Curious by default</h3>
+        <p>The best insights hide in the columns nobody bothered to look at. I bother. Every anomaly is a plot twist waiting to be read.</p>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-gear" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g class="gear-wheel">
+            <path d="M22 10v-4M22 38v-4M34 22h4M6 22h4M30.5 13.5l2.8-2.8M10.7 33.3l2.8-2.8M30.5 30.5l2.8 2.8M10.7 10.7l2.8 2.8" stroke="#12a594" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="22" cy="22" r="8.5" stroke="#12a594" stroke-width="2.5"/>
+          </g>
+          <circle cx="22" cy="22" r="3" fill="#e89b3c"/>
+        </svg>
+        <h3>Builder at heart</h3>
+        <p>Pipelines, dashboards, weekend Flask apps — if it moves data from chaos to clarity, I'll happily build it. Twice, if the first one taught me something.</p>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-compass" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="16" stroke="#12a594" stroke-width="2.5"/>
+          <path class="needle" d="M22 12l4 10-4 10-4-10z" fill="#e89b3c"/>
+          <circle cx="22" cy="22" r="2" fill="#0f211d"/>
+        </svg>
+        <h3>Wanderer's perspective</h3>
+        <p>Two countries, three degrees deep, one habit: never assume the data means what you think it means until you've walked around it a few times.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REFINED / SKILLS ================= -->
+<section class="section dark" id="refined">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="eyebrow"><span class="stage-no">stage 02</span> · refined — the toolkit</div>
+      <h2 class="headline">Fluent in data.<br>Conversational in <em>everything else</em>.</h2>
+      <p class="subhead">The stack changes; the craft doesn't. These are the tools I reach for when a story needs telling at a billion-record scale.</p>
+    </div>
+
+    <div class="sql-console reveal">
+      <div class="sql-header">
+        <div class="lights"><span></span><span></span><span></span></div>
+        <span>evan_boddu.sql — snowflake</span>
+        <button class="run-btn" id="run-sql" type="button">▶ RUN</button>
+      </div>
+      <div class="sql-body">
+        <span class="comment">-- how I introduce myself to a new database</span><br>
+        <span class="kw">SELECT</span> curiosity, craft, coffee<br>
+        <span class="kw">FROM</span> evan_boddu<br>
+        <span class="kw">WHERE</span> problem = <span class="str">'interesting'</span><br>
+        <span class="kw">ORDER BY</span> impact <span class="kw">DESC</span>;
+      </div>
+      <div class="sql-result" id="sql-result" aria-live="polite"></div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card reveal">
+        <svg class="icon icon-db" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse class="ring" cx="22" cy="10" rx="13" ry="4.5" stroke="#2fd4be" stroke-width="2.5"/>
+          <path class="ring" d="M9 10v12c0 2.5 5.8 4.5 13 4.5s13-2 13-4.5V10" stroke="#2fd4be" stroke-width="2.5"/>
+          <path class="ring" d="M9 22v12c0 2.5 5.8 4.5 13 4.5s13-2 13-4.5V22" stroke="#2fd4be" stroke-width="2.5"/>
+          <circle cx="30" cy="33" r="2" fill="#ffbe55"/>
+        </svg>
+        <h3>Programming & Querying</h3>
+        <p>The languages the pipelines speak.</p>
+        <div class="pills">
+          <span class="pill">python</span><span class="pill">advanced sql / ansi sql</span><span class="pill">pyspark</span><span class="pill">spark sql</span><span class="pill">unix / shell</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-stream" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 13c6-5 12 5 17 0s12-5 17 0" stroke="#2fd4be" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M5 23c6-5 12 5 17 0s12-5 17 0" stroke="#ffbe55" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M5 33c6-5 12 5 17 0s12-5 17 0" stroke="#7fd8f7" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <h3>Big Data & Streaming</h3>
+        <p>Billions of records, batch or near real-time — without drama.</p>
+        <div class="pills">
+          <span class="pill">apache spark</span><span class="pill">databricks</span><span class="pill">kafka streaming</span><span class="pill">spark optimization</span><span class="pill">etl / elt</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-cloud" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="cloud-body" d="M12 26a7 7 0 0 1 1.3-13.9A9 9 0 0 1 30.6 14 6.5 6.5 0 0 1 32 26z" stroke="#2fd4be" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle class="drop" cx="16" cy="32" r="1.8" fill="#ffbe55"/>
+          <circle class="drop" cx="23" cy="32" r="1.8" fill="#7fd8f7"/>
+          <circle class="drop" cx="30" cy="32" r="1.8" fill="#2fd4be"/>
+        </svg>
+        <h3>Cloud & Data Platforms</h3>
+        <p>Where the pipelines live and the tables sleep.</p>
+        <div class="pills">
+          <span class="pill">databricks on aws</span><span class="pill">snowflake</span><span class="pill">aws s3</span><span class="pill">cloud data lakes</span><span class="pill">enterprise platforms</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-layers" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="layer" d="M22 6l15 7-15 7L7 13z" stroke="#ffbe55" stroke-width="2.5" stroke-linejoin="round"/>
+          <path class="layer" d="M7 22l15 7 15-7" stroke="#2fd4be" stroke-width="2.5" stroke-linejoin="round"/>
+          <path class="layer" d="M7 30l15 7 15-7" stroke="#7fd8f7" stroke-width="2.5" stroke-linejoin="round"/>
+        </svg>
+        <h3>Modeling, Warehousing & BI</h3>
+        <p>Shaping raw events into tables people actually trust.</p>
+        <div class="pills">
+          <span class="pill">dimensional modeling</span><span class="pill">star & snowflake schema</span><span class="pill">schema evolution</span><span class="pill">historical modeling</span><span class="pill">consumption layers</span><span class="pill">tableau</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-shield" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="shield-body" d="M22 5l14 5v11c0 9-6 15.5-14 18-8-2.5-14-9-14-18V10z" stroke="#2fd4be" stroke-width="2.5" stroke-linejoin="round"/>
+          <path class="check" d="M15 21.5l5 5 9-10" stroke="#ffbe55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h3>Governance & Quality</h3>
+        <p>Because data nobody trusts is just expensive noise.</p>
+        <div class="pills">
+          <span class="pill">data lineage</span><span class="pill">access controls</span><span class="pill">validation & reconciliation</span><span class="pill">schema validation</span><span class="pill">privacy-aware handling</span><span class="pill">root cause analysis</span>
+        </div>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-gauge" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 30a16 16 0 1 1 32 0" stroke="#2fd4be" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M9.5 30a12.5 12.5 0 0 1 3-8" stroke="#ffbe55" stroke-width="2.5" stroke-linecap="round"/>
+          <line class="needle" x1="22" y1="30" x2="22" y2="17" stroke="#ffbe55" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="22" cy="30" r="2.5" fill="#2fd4be"/>
+        </svg>
+        <h3>Orchestration & Reliability</h3>
+        <p>Keeping business-critical pipelines boring — in the best way.</p>
+        <div class="pills">
+          <span class="pill">airflow</span><span class="pill">jenkins</span><span class="pill">git & ci/cd</span><span class="pill">monitoring & alerting</span><span class="pill">sla management</span><span class="pill">performance tuning</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat reveal">
+        <div class="num" data-count="1" data-suffix="B+">0</div>
+        <div class="label">records processed monthly</div>
+      </div>
+      <div class="stat reveal">
+        <div class="num" data-count="6" data-suffix="">0</div>
+        <div class="label">years building data platforms</div>
+      </div>
+      <div class="stat reveal">
+        <div class="num" data-count="40" data-suffix="%">0</div>
+        <div class="label">batch runtime cut through Spark tuning</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CURATED / EXPERIENCE ================= -->
+<section class="section grid-bg" id="curated">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="eyebrow"><span class="stage-no">stage 03</span> · curated — the work</div>
+      <h2 class="headline">The plot, <em>in chapters</em>.</h2>
+      <p class="subhead">Three chapters and counting — from heavy industry in India to enterprise data platforms in Texas.</p>
+    </div>
+    <div class="timeline">
+      <div class="job reveal">
+        <div class="when">APR 2021 — PRESENT</div>
+        <h3>Sr. Data Engineer</h3>
+        <div class="where">Nike · Texas</div>
+        <p>Designing, building, and supporting large-scale production ETL/ELT pipelines with Python, PySpark, Databricks on AWS, Snowflake, Kafka, and Airflow — processing 1B+ records a month across enterprise datasets.</p>
+        <p>Cut batch runtimes by 40% and query times by 35% through Spark and SQL tuning, halved reporting latency with near real-time Kafka ingestion, built dimensional models and curated consumption layers teams actually trust, and mentored junior engineers along the way.</p>
+      </div>
+      <div class="job reveal">
+        <div class="when">AUG — DEC 2020</div>
+        <h3>Data Analyst — Capstone</h3>
+        <div class="where">ThomasNet</div>
+        <p>Time series analysis of Texas GDP with Python and Alteryx — improving forecasting accuracy and cutting processing time by 20% — plus Tableau dashboards that turned leading economic indicators into insights stakeholders could act on.</p>
+      </div>
+      <div class="job reveal">
+        <div class="when">MAY — AUG 2017</div>
+        <h3>Software Intern</h3>
+        <div class="where">Bharat Heavy Electricals Limited</div>
+        <p>First taste of data in the wild: automated CNC machine data preparation workflows and built Excel dashboards for operational leadership, improving reporting efficiency by 15% — and learning that data problems are people problems wearing spreadsheets.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROJECTS (side quests) ================= -->
+<section class="section dark" id="projects">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="eyebrow"><span class="stage-no">stage 03b</span> · side quests</div>
+      <h2 class="headline">Built for fun.<br>Kept for <em>the lessons</em>.</h2>
+      <p class="subhead">Side projects are how I stay sharp — small ideas, shipped end to end.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card reveal">
+        <svg class="icon icon-cart" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 8h5l4.5 19h18l4-13H12.5" stroke="#2fd4be" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle class="wheel" cx="17" cy="34" r="3" stroke="#ffbe55" stroke-width="2.5"/>
+          <circle class="wheel" cx="30" cy="34" r="3" stroke="#ffbe55" stroke-width="2.5"/>
+        </svg>
+        <h3>Grocery List Check App</h3>
+        <p>A clean little Flask app for managing grocery runs — add, check off, edit, delete. Proof that even the humblest CRUD app deserves a thoughtful UI and a fancy README.</p>
+        <div class="pills">
+          <span class="pill">python</span><span class="pill">flask</span><span class="pill">html</span>
+        </div>
+        <p style="margin-top:16px;"><a href="https://github.com/evanboddu/grocery-list-check-app">view on github →</a></p>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-spark" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path class="spark-big" d="M22 8l3.2 10.8L36 22l-10.8 3.2L22 36l-3.2-10.8L8 22l10.8-3.2z" fill="#ffbe55"/>
+          <path class="spark-small" d="M33 8l1.4 4.6L39 14l-4.6 1.4L33 20l-1.4-4.6L27 14l4.6-1.4z" fill="#2fd4be"/>
+        </svg>
+        <h3>Next chapter loading…</h3>
+        <p>There's always a side project brewing. Watch the GitHub profile for whatever the data whispers next.</p>
+        <p style="margin-top:16px;"><a href="https://github.com/evanboddu">follow along →</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LINEAGE / EDUCATION ================= -->
+<section class="section" id="lineage">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="eyebrow"><span class="stage-no">stage 04</span> · lineage — where I come from</div>
+      <h2 class="headline">Trained to question everything.<br>Certified to <em>back it up</em>.</h2>
+    </div>
+    <div class="grid grid-3">
+      <div class="card reveal">
+        <svg class="icon icon-flask" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6h8M20 6v11l-9.5 15A3.5 3.5 0 0 0 13.5 38h17a3.5 3.5 0 0 0 3-6L24 17V6" stroke="#12a594" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle class="bubble" cx="20" cy="30" r="1.8" fill="#e89b3c"/>
+          <circle class="bubble" cx="25" cy="32" r="1.4" fill="#e89b3c"/>
+          <circle class="bubble" cx="22" cy="28" r="1.1" fill="#d96c57"/>
+        </svg>
+        <h3>PhD, Information Technology</h3>
+        <p><strong>University of the Cumberlands</strong><br>Data Science Specialization<br>Williamsburg, KY</p>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-cap" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 8L4 17l18 9 18-9z" stroke="#12a594" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M12 21.5V30c0 2.5 4.5 4.5 10 4.5s10-2 10-4.5v-8.5" stroke="#12a594" stroke-width="2.5" stroke-linecap="round"/>
+          <path class="tassel" d="M33 18.5V28" stroke="#e89b3c" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="33" cy="29.5" r="2" fill="#e89b3c"/>
+        </svg>
+        <h3>MS, Business Analytics</h3>
+        <p><strong>The University of Texas at Dallas</strong><br>Naveen Jindal School of Management<br>Data Science Track</p>
+      </div>
+      <div class="card reveal">
+        <svg class="icon icon-cap" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22 8L4 17l18 9 18-9z" stroke="#12a594" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M12 21.5V30c0 2.5 4.5 4.5 10 4.5s10-2 10-4.5v-8.5" stroke="#12a594" stroke-width="2.5" stroke-linecap="round"/>
+          <path class="tassel" d="M33 18.5V28" stroke="#e89b3c" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="33" cy="29.5" r="2" fill="#e89b3c"/>
+        </svg>
+        <h3>BE, Electronics & Communications</h3>
+        <p><strong>Andhra University</strong><br>College of Engineering<br>Visakhapatnam, India</p>
+      </div>
+    </div>
+    <div class="card reveal" style="margin-top:18px;">
+      <svg class="icon icon-medal" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 4l4 9M29 4l-4 9M13 4h6M25 4h6" stroke="#e89b3c" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="22" cy="25" r="12" stroke="#12a594" stroke-width="2.5"/>
+        <path d="M22 19l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" fill="#e89b3c"/>
+        <line class="shine" x1="16" y1="31" x2="28" y2="18" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0"/>
+      </svg>
+      <h3>Certifications</h3>
+      <div class="pills">
+        <span class="pill">tableau desktop specialist</span>
+        <span class="pill">google analytics iq</span>
+        <span class="pill">aws fundamentals specialization</span>
+        <span class="pill">sql for data science</span>
+        <span class="pill">hackerrank sql gold badge</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SERVED / CONTACT ================= -->
+<footer id="served">
+  <div class="footer-inner">
+    <div class="eyebrow reveal" style="color:var(--teal-bright);"><span class="stage-no" style="color:var(--amber-bright);">stage 05</span> · served — the consumption layer</div>
+    <div class="contact-line reveal">Got a dataset with a story to tell? <em>Let's listen to it together.</em></div>
+    <div class="links reveal">
+      <a href="mailto:bodduevan@gmail.com">email →</a>
+      <a href="https://github.com/evanboddu">github →</a>
+      <a href="https://www.linkedin.com/in/evanboddu/">linkedin →</a>
+    </div>
+    <div class="fine-print">
+      © 2026 Evan Jones Boddu · Dallas, Texas<br>
+      <span class="comment">-- no pixels were harmed in the making of this site. a few datasets were gently interrogated.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- scroll reveal ---------- */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+  /* ---------- count-up stats ---------- */
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      statObserver.unobserve(el);
+      const target = parseInt(el.dataset.count, 10);
+      const suffix = el.dataset.suffix || '';
+      if (reducedMotion) { el.textContent = target + suffix; return; }
+      const duration = 1100;
+      const start = performance.now();
+      const tick = (now) => {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(eased * target) + (p === 1 ? suffix : '');
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach((el) => statObserver.observe(el));
+
+  /* ---------- pipeline progress + active stage ---------- */
+  const fill = document.getElementById('pipeline-fill');
+  const stageLinks = document.querySelectorAll('.stages a');
+  const stageSections = ['raw', 'refined', 'curated', 'lineage', 'served']
+    .map((id) => ({ id, el: document.getElementById(id) }));
+
+  function onScroll() {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - window.innerHeight;
+    fill.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+
+    let current = null;
+    const probe = window.scrollY + window.innerHeight * 0.4;
+    stageSections.forEach(({ id, el }) => { if (el && el.offsetTop <= probe) current = id; });
+    stageLinks.forEach((a) => a.classList.toggle('active', a.dataset.stage === current));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- live record ticker (1B+/month ≈ 386 records/sec) ---------- */
+  const tickerEl = document.getElementById('ticker-count');
+  const t0 = performance.now();
+  function updateTicker() {
+    const seconds = (performance.now() - t0) / 1000;
+    const count = Math.floor(seconds * 386 + Math.sin(seconds * 2.1) * 9);
+    tickerEl.textContent = Math.max(0, count).toLocaleString('en-US');
+  }
+  if (reducedMotion) {
+    setInterval(updateTicker, 1000); updateTicker();
+  } else {
+    (function tickLoop() { updateTicker(); requestAnimationFrame(tickLoop); })();
+  }
+
+  /* ---------- runnable SQL ---------- */
+  const runBtn = document.getElementById('run-sql');
+  const resultEl = document.getElementById('sql-result');
+  const resultLines = [
+    'curiosity  | craft      | coffee',
+    '-----------+------------+----------',
+    '<span class="hl">unlimited</span>  | <span class="hl">6+ years</span>   | <span class="hl">plenty</span>',
+    '',
+    '<span class="ok">1 row returned in 0.042s — it\'s always 1 row. it\'s just me.</span>'
+  ];
+  runBtn.addEventListener('click', () => {
+    runBtn.disabled = true;
+    resultEl.innerHTML = '';
+    resultEl.classList.add('open');
+    let line = 0;
+    const typeLine = () => {
+      if (line >= resultLines.length) {
+        runBtn.disabled = false;
+        runBtn.textContent = '▶ RUN AGAIN';
+        return;
+      }
+      resultEl.innerHTML += resultLines[line] + '\n';
+      line += 1;
+      setTimeout(typeLine, reducedMotion ? 0 : 180);
+    };
+    setTimeout(typeLine, reducedMotion ? 0 : 350);
+  });
+
+  /* ---------- hero particle stream ---------- */
+  const canvas = document.getElementById('stream-canvas');
+  const ctx = canvas.getContext('2d');
+  const hero = document.querySelector('.hero');
+  let particles = [];
+  let pointer = { x: -9999, y: -9999 };
+  const COLORS = ['rgba(18,165,148,', 'rgba(232,155,60,', 'rgba(127,178,214,'];
+
+  function sizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = hero.clientWidth * dpr;
+    canvas.height = hero.clientHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function makeParticle(spawnAnywhere) {
+    const lane = Math.random();
+    return {
+      x: spawnAnywhere ? Math.random() * hero.clientWidth : -10,
+      y: hero.clientHeight * (0.08 + lane * 0.84),
+      baseY: 0,
+      speed: 0.35 + Math.random() * 0.9,
+      amp: 6 + Math.random() * 18,
+      phase: Math.random() * Math.PI * 2,
+      freq: 0.004 + Math.random() * 0.004,
+      r: 1.2 + Math.random() * 2.2,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: 0.25 + Math.random() * 0.4
+    };
+  }
+
+  function initParticles() {
+    const count = Math.min(130, Math.floor(hero.clientWidth / 11));
+    particles = Array.from({ length: count }, () => makeParticle(true));
+  }
+
+  function drawStream() {
+    ctx.clearRect(0, 0, hero.clientWidth, hero.clientHeight);
+    particles.forEach((p) => {
+      p.x += p.speed;
+      const wave = Math.sin(p.x * p.freq * Math.PI * 2 + p.phase) * p.amp;
+      let y = p.y + wave;
+
+      // pointer repulsion — records route around your finger
+      const dx = p.x - pointer.x;
+      const dy = y - pointer.y;
+      const dist2 = dx * dx + dy * dy;
+      if (dist2 < 10000) {
+        const dist = Math.sqrt(dist2) || 1;
+        const push = (100 - dist) / 100;
+        y += (dy / dist) * push * 34;
+      }
+
+      if (p.x > hero.clientWidth + 12) Object.assign(p, makeParticle(false));
+
+      ctx.beginPath();
+      ctx.arc(p.x, y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.fill();
+    });
+    requestAnimationFrame(drawStream);
+  }
+
+  function drawStaticStream() {
+    ctx.clearRect(0, 0, hero.clientWidth, hero.clientHeight);
+    particles.forEach((p) => {
+      const wave = Math.sin(p.x * p.freq * Math.PI * 2 + p.phase) * p.amp;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y + wave, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.fill();
+    });
+  }
+
+  hero.addEventListener('pointermove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    pointer.x = e.clientX - rect.left;
+    pointer.y = e.clientY - rect.top;
+  });
+  hero.addEventListener('pointerleave', () => { pointer.x = -9999; pointer.y = -9999; });
+
+  window.addEventListener('resize', () => { sizeCanvas(); initParticles(); if (reducedMotion) drawStaticStream(); });
+
+  sizeCanvas();
+  initParticles();
+  if (reducedMotion) { drawStaticStream(); } else { requestAnimationFrame(drawStream); }
+</script>
+
+</body>
+</html>
