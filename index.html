@@ -168,15 +168,28 @@
     color: var(--console-text);
   }
 
-  /* scroll reveal */
+  /* scroll reveal (staggered per-card via --rd, set by JS) */
   .reveal {
     opacity: 0;
     transform: translateY(26px);
     transition: opacity .7s cubic-bezier(0.22, 0.8, 0.3, 1), transform .7s cubic-bezier(0.22, 0.8, 0.3, 1);
+    transition-delay: var(--rd, 0s);
   }
   .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* highlighted words draw their own underline as they reveal */
+  .headline em {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 94%;
+    background-size: 0% 2px;
+    transition: background-size .8s cubic-bezier(0.22, 0.8, 0.3, 1) .5s;
+  }
+  .visible .headline em { background-size: 100% 2px; }
+
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
+    .headline em { background-size: 100% 2px; transition: none; }
     html { scroll-behavior: auto; }
   }
 
@@ -680,7 +693,13 @@
     border: 1px solid var(--paper-line);
     color: var(--ink-soft);
     background: var(--paper);
-    transition: border-color .2s ease, color .2s ease;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .45s ease var(--pd, 0s), transform .45s ease var(--pd, 0s), border-color .2s ease, color .2s ease;
+  }
+  .visible .pill { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .pill { opacity: 1; transform: none; transition: border-color .2s ease, color .2s ease; }
   }
   .card:hover .pill { border-color: rgba(18, 165, 148, 0.45); }
   .dark .pill {
@@ -785,7 +804,7 @@
     <div class="reveal">
       <div class="eyebrow"><span class="stage-no">stage 01</span> · raw — where every story starts</div>
       <h2 class="headline">Every dataset has a story.<br>I just help it <em>speak</em>.</h2>
-      <p class="subhead">From turbine floors in Visakhapatnam to billion-record pipelines at Nike — six years of following the same thread: curiosity. Give me a messy table and a hard question, and I'm genuinely happy.</p>
+      <p class="subhead">From turbine floors to billion-record pipelines at Nike — six years of following the same thread: curiosity. Give me a messy table and a hard question, and I'm genuinely happy.</p>
     </div>
     <div class="grid grid-3">
       <div class="card reveal">
@@ -1086,7 +1105,20 @@
 <script>
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- scroll reveal ---------- */
+  /* ---------- staggered scroll reveal ---------- */
+  // cards inside the same grid/timeline cascade in one after another
+  document.querySelectorAll('.grid, .timeline, .stats').forEach((group) => {
+    Array.from(group.children).forEach((child, i) => {
+      if (child.classList.contains('reveal')) child.style.setProperty('--rd', (i * 0.1) + 's');
+    });
+  });
+  // pills inside each card pop in one by one
+  document.querySelectorAll('.pills').forEach((group) => {
+    Array.from(group.children).forEach((pill, i) => {
+      pill.style.setProperty('--pd', (0.25 + i * 0.06) + 's');
+    });
+  });
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -1097,24 +1129,32 @@
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 
-  /* ---------- count-up stats ---------- */
+  /* ---------- count-up stats: replay from 0 every time they scroll into view ---------- */
+  function animateCount(el) {
+    const target = parseInt(el.dataset.count, 10);
+    const suffix = el.dataset.suffix || '';
+    if (reducedMotion) { el.textContent = target + suffix; return; }
+    const duration = 1600;
+    const start = performance.now();
+    const tick = (now) => {
+      if (el._countRun !== start) return; // a newer run took over
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target) + (p === 1 ? suffix : '');
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    el._countRun = start;
+    requestAnimationFrame(tick);
+  }
   const statObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
       const el = entry.target;
-      statObserver.unobserve(el);
-      const target = parseInt(el.dataset.count, 10);
-      const suffix = el.dataset.suffix || '';
-      if (reducedMotion) { el.textContent = target + suffix; return; }
-      const duration = 1100;
-      const start = performance.now();
-      const tick = (now) => {
-        const p = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = Math.round(eased * target) + (p === 1 ? suffix : '');
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
+      if (entry.isIntersecting) {
+        animateCount(el);
+      } else if (!reducedMotion) {
+        el._countRun = null;
+        el.textContent = '0';
+      }
     });
   }, { threshold: 0.5 });
   document.querySelectorAll('[data-count]').forEach((el) => statObserver.observe(el));
@@ -1125,6 +1165,7 @@
   const stageSections = ['raw', 'refined', 'curated', 'lineage', 'served']
     .map((id) => ({ id, el: document.getElementById(id) }));
 
+  const heroContent = document.querySelector('.hero-content');
   function onScroll() {
     const doc = document.documentElement;
     const max = doc.scrollHeight - window.innerHeight;
@@ -1134,6 +1175,12 @@
     const probe = window.scrollY + window.innerHeight * 0.4;
     stageSections.forEach(({ id, el }) => { if (el && el.offsetTop <= probe) current = id; });
     stageLinks.forEach((a) => a.classList.toggle('active', a.dataset.stage === current));
+
+    // hero parallax: content drifts down slower than the page and fades out
+    if (!reducedMotion && window.scrollY < window.innerHeight) {
+      heroContent.style.transform = 'translateY(' + (window.scrollY * 0.22) + 'px)';
+      heroContent.style.opacity = Math.max(0, 1 - window.scrollY / (window.innerHeight * 0.85));
+    }
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
